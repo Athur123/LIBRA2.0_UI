@@ -20,10 +20,14 @@ class PersonalBoardPage(BasePage):
     tabs = (By.CSS_SELECTOR, '.ant-tabs-nav-container .ant-tabs-tab')
     objective_checkbox = (By.CSS_SELECTOR, '.objective-checkbox')
     objective_status = (By.CSS_SELECTOR, '.item-header-tags')
-    completion_button = (By.CSS_SELECTOR, '.completion-link-btn>button .anticon-edit')
+    # 编辑完成情况按钮
+    completion_button = (By.CSS_SELECTOR, '.completion-link-btn>button')
 
+    # 目标创建时间、类型等content内容
     objective_items_content = (By.CSS_SELECTOR, 'app-objective-list-item .objective-item-content')
+    # 完成值
     objective_completion_value = (By.CSS_SELECTOR, 'app-objective-value > input')
+    # 完成进度
     objective_completion_progress = (By.CSS_SELECTOR, '[formcontrolname="accomplishProgress"] input')
 
     def create_objective_page(self):
@@ -72,7 +76,7 @@ class PersonalBoardPage(BasePage):
             es[0].click()
             logging.info(es)
         self.click(self.buttons, action_type)
-        if self.is_element_visibility(self.modal_buttons):
+        if self.is_element_visibility(self.confirm_modal_buttons):
             self.modal_action("确定")
 
     def check_objective_state(self, objective_name, objective_state) -> bool:
@@ -97,12 +101,22 @@ class PersonalBoardPage(BasePage):
             raise f"找不到目标状态{objective_name}"
 
     def update_objective_progress(self, objective_name: str, objective_completion_value: str,
-                                  objective_completion_progress: int = None):
+                                  objective_completion_progress: int = None) -> bool:
         e = self.get_text_element(self.objective_items, objective_name)
-        c = locate_with(*self.objective_items_content).below(element_or_locator=e)
-
-        d = self.driver.find_element(c)
+        # 获取目标的文本描述行内容
+        items_content = locate_with(*self.objective_items_content).below(element_or_locator=e)
+        # 定位点击更新进度按钮
+        edit_button = self.driver.find_element(items_content).find_element(
+            *self.completion_button)
+        # 点击更新进度按钮
+        self.click(edit_button)
         # logging.info
+        self.type_form_item(self.modal, "完成值", objective_completion_value)
+        self.type_form_item(self.modal, "完成进度", objective_completion_progress)
+        self.modal_action("确认")
+        # 检查更新提示文本
+        return self.is_test_to_be_present(self.msg, "更新完成值成功")
+
 
 class CreateObjectivePage(BasePage):
     title = "新增我的目标"

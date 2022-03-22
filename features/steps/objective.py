@@ -64,7 +64,7 @@ def step_impl(context, name):
 
 @when('更新目标"{name}"进度')
 def step_impl(context, name):
-    context.page.update_objective_progress(name,objective_completion_value=1)
+    context.page.update_objective_progress(name, objective_completion_value=12, objective_completion_progress=33)
 
 
 @then('检查目标"{name}"是否存在"{result}"')

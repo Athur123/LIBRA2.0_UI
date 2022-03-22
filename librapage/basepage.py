@@ -39,7 +39,14 @@ class BasePage:
     # 下拉选择
     select_value = (By.CSS_SELECTOR, '.cdk-overlay-pane .ant-select-dropdown ul>li')
     select_ant = (By.CSS_SELECTOR, 'nz-select .ant-select-selection__rendered')
-    modal_buttons = (By.CSS_SELECTOR, '.ant-modal-body .ant-modal-confirm-btns button')
+    # 确认模态框按钮组
+    confirm_modal_buttons = (By.CSS_SELECTOR, '.ant-modal-body .ant-modal-confirm-btns button')
+    # 带表单模态框按钮组
+    modal_buttons = (By.CSS_SELECTOR, '.ant-modal-content button.ant-btn')
+    # 模态框
+    modal = (By.CSS_SELECTOR, '.ant-modal-body')
+    # 提示信息
+    msg = (By.CSS_SELECTOR, 'nz-message-container>.ant-message nz-message')
 
     def __init__(self, driver: _D, timeout=10) -> None:
 
@@ -104,12 +111,6 @@ class BasePage:
             return False
         except EC.NoSuchElementException:
             raise "定位不到相关页面元素"
-
-        # try:
-        #     self.wait.until(EC.text_to_be_present_in_element(loc, text))
-        #     return True
-        # except TimeoutException:
-        #     return False
 
     def get_text(self, loc: _Loc_E) -> str:
         return self.wait.until(EC.visibility_of_element_located(loc)).text if type(loc) != WebElement else loc.text
@@ -219,7 +220,11 @@ class BasePage:
             time.sleep(delay)
 
     def modal_action(self, text: str):
-        self.click(self.modal_buttons, text)
+
+        try:
+            self.click(self.modal_buttons, text)
+        except NoSuchElementException:
+            raise f"按钮{text}不存在"
 
     def is_element_visibility(self, locator: _Loc_E) -> bool:
         try:
