@@ -102,7 +102,7 @@ class PersonalBoardPage(BasePage):
         c = locate_with(*self.objective_items_content).below(element_or_locator=e)
 
         d = self.driver.find_element(c)
-        logging.info
+        # logging.info
 
 class CreateObjectivePage(BasePage):
     title = "新增我的目标"
