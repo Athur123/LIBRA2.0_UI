@@ -86,15 +86,49 @@ Feature: 目标管理
      and 失效目标"<name>"
     Then 检查目标"<name>"是否存在"<result>"
      and 检查目标"<name>"状态是否为"<state>"
-  Examples: 失效测试
+  Examples: 失效目标测试
     |name|result|tab_name|state|
     |测试目标8-5|是|进行中|失效审核中|
 
   @update
-  Scenario Outline: 更新目标进度
+  Scenario Outline: 更新定性目标进度
     Given 进入我的目标菜单
     When 切换tab至"<tab_name>"
-    and 更新目标"<name>"进度
-  Examples: 失效测试
-    |name|tab_name|
-    |测试目标8-14|进行中|
+    and 更新目标"<name>"完成值"<value>"进度"<progress>"
+  Examples: 更新定性目标进度测试
+    |name|tab_name|value|progress|
+    |测试目标8-14|进行中|41|22|
+
+  @update
+  Scenario Outline: 更新定量目标进度
+    Given 进入我的目标菜单
+    When 切换tab至"<tab_name>"
+    and 更新目标"<name>"完成值"<value>"
+  Examples: 更新定量目标进度测试
+    |name|tab_name|value|
+    |测试目标8-13|进行中|43|
+
+  @accomplish
+  Scenario Outline: 完成目标
+    Given 进入我的目标菜单
+    When 切换tab至"<tab_name>"
+     and 更新目标"<name>"完成值"<value>"进度"<progress>"
+     and 完成目标"<name>"
+     and 切换tab至"已完成"
+    Then 搜索目标"<name>"
+     and 检查目标"<name>"是否存在"<result>"
+     and 检查目标"<name>"状态是否为"<state>"
+    Examples: 完成目标测试
+      |name|tab_name|value|progress|result|state|
+      |测试目标8-14|进行中|177|100|是|完成方案|
+
+  @attention
+  Scenario Outline: 关注目标
+    Given 进入我的目标菜单
+    When 切换tab至"<tab_name>"
+     and 搜索目标"<name>"
+     and 关注目标"<name>"
+    Then 检查目标"<name>"状态是否已关注"<attention_state>"
+  Examples: 关注目标测试
+    |name|tab_name|attention_state|
+    |测试目标8-4|进行中|是|

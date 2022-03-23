@@ -1,5 +1,5 @@
 import json
-
+from selenium import webdriver
 from selenium.webdriver import Chrome, Firefox, Edge
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -95,6 +95,7 @@ class BasePage:
     def type(self, loc: _Loc_E, text) -> None:
         element: WebElement = self.wait.until(EC.visibility_of_element_located(loc)) if type(loc) != WebElement else loc
         element.location_once_scrolled_into_view
+        logging.info(f"文本内容 {element.text}")
         element.clear()
         element.send_keys(text)
 
@@ -190,7 +191,12 @@ class BasePage:
                     else:
                         # if css_class != 'nz-select':
                         if form_control_type_name in ['input', 'number', 'textarea']:
-                            self.type(_p, text)
+                            if form_control_type_name == "number":
+                                webdriver.ActionChains(self.driver).double_click(_p).send_keys(
+                                    Keys.BACKSPACE).send_keys(
+                                    text).perform()
+                            else:
+                                self.type(_p, text)
                         elif form_control_type_name == 'select':
                             self.select_from_dropdown(_p, choose_text=text)
                         # elif form_control_type_name == 'select_multiple':
@@ -232,6 +238,20 @@ class BasePage:
             return True
         except TimeoutException:
             return False
+
+    def is_locator_exist(self, locator) -> bool:
+        start = time.time()
+        res = False
+        while time.time() < start + self.timeout:
+            try:
+                self.driver.find_element(locator)
+            except:
+                time.sleep(self._poll)
+                continue
+            else:
+                res = True
+                break
+        return res
 
 
 def visibility_of_any_elements_located(locator: Union[_Loc, RelativeBy]):

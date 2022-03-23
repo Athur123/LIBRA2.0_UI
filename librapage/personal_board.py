@@ -1,5 +1,7 @@
 import json
 import logging
+import time
+
 from selenium.common.exceptions import NoSuchElementException
 from librapage.basepage import BasePage, _D
 from selenium.webdriver.common.by import By
@@ -20,6 +22,8 @@ class PersonalBoardPage(BasePage):
     tabs = (By.CSS_SELECTOR, '.ant-tabs-nav-container .ant-tabs-tab')
     objective_checkbox = (By.CSS_SELECTOR, '.objective-checkbox')
     objective_status = (By.CSS_SELECTOR, '.item-header-tags')
+    # 是否关注的icon
+    objective_icon = (By.CSS_SELECTOR, '.item-header-icon >i>svg')
     # 编辑完成情况按钮
     completion_button = (By.CSS_SELECTOR, '.completion-link-btn>button')
 
@@ -40,13 +44,16 @@ class PersonalBoardPage(BasePage):
 
         return CreateObjectivePage(self.driver)
 
-    def search_objective(self, objective_name, search: bool = False) -> bool:
+    def search_objective(self, objective_name, search: bool = False, delay: int = 0) -> bool:
         """
 
+        :param delay: 延迟时间，搜索结果延迟时间
         :param objective_name:搜索的目标名称
         :param search:是否请求搜索，为false时，不执行搜索，直接在列表检索目标，为True时，执行搜索指定目标
         :return:
         """
+        if delay:
+            time.sleep(delay)
         if search:
             self.type(self.search_input, objective_name)
             self.click(self.search_button)
@@ -58,7 +65,7 @@ class PersonalBoardPage(BasePage):
             return True
 
     def switch_tab(self, tab_name: str):
-        logging.debug(f"进入tab{tab_name}")
+        # logging.debug(f"进入tab{tab_name}")
         self.click(self.tabs, tab_name)
 
     # 操作目标
@@ -100,6 +107,18 @@ class PersonalBoardPage(BasePage):
         except TimeoutError:
             raise f"找不到目标状态{objective_name}"
 
+    def check_attention_state(self, objective_name, is_attention: bool = False) -> bool:
+        """
+        :param objective_name:目标名称
+        :param is_attention:目标状态
+        :return:bool
+        """
+        e = self.get_text_element(self.objective_items, objective_name)
+        if not e:
+            raise f"找不到目标{objective_name}"
+        c = locate_with(*self.objective_icon).to_right_of(element_or_locator=e)
+        return self.is_locator_exist(c)
+
     def update_objective_progress(self, objective_name: str, objective_completion_value: str,
                                   objective_completion_progress: int = None) -> bool:
         e = self.get_text_element(self.objective_items, objective_name)
@@ -112,7 +131,8 @@ class PersonalBoardPage(BasePage):
         self.click(edit_button)
         # logging.info
         self.type_form_item(self.modal, "完成值", objective_completion_value)
-        self.type_form_item(self.modal, "完成进度", objective_completion_progress)
+        if objective_completion_progress:
+            self.type_form_item(self.modal, "完成进度", str(objective_completion_progress))
         self.modal_action("确认")
         # 检查更新提示文本
         return self.is_test_to_be_present(self.msg, "更新完成值成功")

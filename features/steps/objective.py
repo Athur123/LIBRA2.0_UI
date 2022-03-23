@@ -48,8 +48,14 @@ def step_impl(context, name):
 
 @when('失效目标"{name}"')
 def step_impl(context, name):
-    context.page.switch_tab("进行中")
+    # context.page.switch_tab("进行中")
     context.page.objective_action(action_type="失效", objectives_names=name)
+
+
+@when('完成目标"{name}"')
+def step_impl(context, name):
+    # context.page.switch_tab("进行中")
+    context.page.objective_action(action_type="完成目标", objectives_names=name)
 
 
 @when('切换tab至"{tab_name}"')
@@ -58,13 +64,16 @@ def step_impl(context, tab_name):
 
 
 @when('搜索目标"{name}"')
+@then('搜索目标"{name}"')
 def step_impl(context, name):
     context.page.search_objective(name, search=True)
 
 
-@when('更新目标"{name}"进度')
-def step_impl(context, name):
-    context.page.update_objective_progress(name, objective_completion_value=12, objective_completion_progress=33)
+@when('更新目标"{name}"完成值"{value}"')
+@when('更新目标"{name}"完成值"{value}"进度"{progress}"')
+def step_impl(context, name, value, progress=None):
+    context.page.update_objective_progress(name, objective_completion_value=value,
+                                           objective_completion_progress=progress)
 
 
 @then('检查目标"{name}"是否存在"{result}"')
@@ -80,3 +89,10 @@ def step_impl(context, name, result):
 @then('检查目标"{name}"状态是否为"{state}"')
 def step_impl(context, name, state):
     assert context.page.check_objective_state(objective_name=name, objective_state=state)
+
+
+@then('检查目标"{name}"状态是否已关注"{attention_state}"')
+def step_impl(context, name, attention_state):
+    r = context.page.check_attention_state(objective_name=name, is_attention=attention_state)
+    logging.info(f"检查结果：{r}")
+    assert r
